@@ -13,6 +13,8 @@ public class AppManager : MonoBehaviour
     public User User;
     public ErrorWindow errorWindow;
     public HakatonInfoManager hakatonInfoManager;
+    public TaskRatingManager taskRatingManager;
+    public TopTeamsManager topTeamsManager;
 
     private DBHelper _dbHelper;
     
@@ -81,9 +83,9 @@ public class AppManager : MonoBehaviour
     {
         hakatonInfoManager.ClearHakatonsInfoPanel();
         var hakatons = _dbHelper.GetHakatonsInfo(User.Login);
-        for (int i = 0; i < hakatons.Count; i++)
+        foreach (var hakaton in hakatons)
         {
-            hakatonInfoManager.CreateHakatonsInfoPanels(hakatons[i]);
+            hakatonInfoManager.CreateHakatonsInfoPanels(hakaton);
         }
         menuManager.OpenSubMenu("HakatonsInfoMenu");
     }
@@ -95,11 +97,23 @@ public class AppManager : MonoBehaviour
 
     public void StatsTasks()
     {
+        taskRatingManager.ClearHakatonsInfoPanel();
+        var tasks = _dbHelper.GetTasksInfo(User.Login);
+        foreach (var task in tasks)
+        {
+            taskRatingManager.CreateTasksInfoPanels(task);
+        }
         menuManager.OpenSubMenu("StatsTasksMenu");
     }
 
     public void StatsTeams()
     {
+        topTeamsManager.ClearHakatonsInfoPanel();
+        var topTeams = _dbHelper.GetTopTeamsInfo(User.Login);
+        foreach (var team in topTeams)
+        {
+            topTeamsManager.CreateTopTeamsPanels(team);
+        }
         menuManager.OpenSubMenu("StatsTeamsMenu");
     }
 

@@ -111,4 +111,48 @@ public class DBHelper
 
         return hakatonsInfo;
     }
+
+    public List<TaskRating> GetTasksInfo(string login)
+    {
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={GetUserRole(login).ToString()};Password={_connectionsSettings[GetUserRole(login)]};";
+
+        var tasksInfo = new List<TaskRating>();
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand("select * from rating_info", conn);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                tasksInfo.Add(new TaskRating(dr.GetString(0), dr.GetString(1), dr.GetString(2), dr.GetString(3),
+                    dr.GetTimeSpan(4), dr.GetDecimal(5)));
+            }
+            conn.Close();
+        }
+
+        return tasksInfo;
+    }
+
+    public List<TopTeam> GetTopTeamsInfo(string login)
+    {
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={GetUserRole(login).ToString()};Password={_connectionsSettings[GetUserRole(login)]};";
+
+        var topTeams = new List<TopTeam>();
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand("select * from top_teams_per_hakaton()", conn);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                topTeams.Add(new TopTeam(dr.GetString(0), dr.GetString(1), dr.GetDecimal(2), dr.GetTimeSpan(3),
+                    dr.GetDecimal(4)));
+            }
+            conn.Close();
+        }
+
+        return topTeams;
+    }
 }
