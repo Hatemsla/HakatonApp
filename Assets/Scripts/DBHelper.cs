@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using DefaultNamespace;
+using HakatonApp;
 using Npgsql;
 
 public class DBHelper
@@ -16,7 +17,7 @@ public class DBHelper
         { Roles.postgres, "postgres123" },
         { Roles.sponsor, "sponsor123" },
         { Roles.cu_org, "cu_org123" },
-        { Roles.cu_org_sp, "cu_org_sp123" },
+        { Roles.cu_org_sp, "cu_org_sp123" }, 
         { Roles.cu_sp, "cu_sp123" },
         { Roles.ju_me, "ju_me123" },
     };
@@ -54,6 +55,21 @@ public class DBHelper
         return Roles.postgres;
     }
 
+    public void UpdatePassword(string login, string newPassword)
+    {
+        Roles roleId = GetUserRole(login);
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={roleId.ToString()};Password={_connectionsSettings[roleId]};";
+
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand($"select update_password('{login}', '{newPassword}')", conn);
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+    }
+
     public bool AuthUser(string login, string password)
     {
         Roles roleId = GetUserRole(login);
@@ -72,5 +88,27 @@ public class DBHelper
         }
 
         return false;
+    }
+
+    public List<Hakaton> GetHakatonsInfo(string login)
+    {
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={GetUserRole(login).ToString()};Password={_connectionsSettings[GetUserRole(login)]};";
+
+        var hakatonsInfo = new List<Hakaton>();
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand("select * from hakaton_info", conn);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                hakatonsInfo.Add(new Hakaton(dr.GetString(0), dr.GetBoolean(1), dr.GetDateTime(2), dr.GetDateTime(3),
+                    dr.GetDecimal(4), dr.GetInt32(5)));
+            }
+            conn.Close();
+        }
+
+        return hakatonsInfo;
     }
 }
