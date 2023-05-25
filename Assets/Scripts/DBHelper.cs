@@ -2,6 +2,7 @@
 using DefaultNamespace;
 using HakatonApp;
 using Npgsql;
+using TMPro;
 
 public class DBHelper
 {
@@ -16,10 +17,6 @@ public class DBHelper
         { Roles.participant, "participant123" },
         { Roles.postgres, "postgres123" },
         { Roles.sponsor, "sponsor123" },
-        { Roles.cu_org, "cu_org123" },
-        { Roles.cu_org_sp, "cu_org_sp123" }, 
-        { Roles.cu_sp, "cu_sp123" },
-        { Roles.ju_me, "ju_me123" },
     };
 
     public void RegUser(string login, string password, Roles roleId)
@@ -154,5 +151,45 @@ public class DBHelper
         }
 
         return topTeams;
+    }
+
+    public List<TMP_Dropdown.OptionData> GetHakatons(string login)
+    {
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={GetUserRole(login).ToString()};Password={_connectionsSettings[GetUserRole(login)]};";
+
+        var hakatons = new List<TMP_Dropdown.OptionData>();
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand("select hakaton_name from hakaton_info", conn);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                hakatons.Add(new TMP_Dropdown.OptionData(dr.GetString(0)));
+            }
+            conn.Close();
+        }
+
+        return hakatons;
+    }
+
+    public HakatonTaskStats GetHakatonTaskStats(string login, string hakatonName)
+    {
+        string connection =
+            $"Server=127.0.0.1;Port=5432;Database=hakaton;User Id={GetUserRole(login).ToString()};Password={_connectionsSettings[GetUserRole(login)]};";
+
+        using (var conn = new NpgsqlConnection(connection))
+        {
+            conn.Open();
+            var cmd = new NpgsqlCommand($"select * from return_t_ratings('{hakatonName}')", conn);
+            var dr = cmd.ExecuteReader();
+            while (dr.Read())
+            {
+                return new HakatonTaskStats(dr.GetTimeSpan(1), dr.GetTimeSpan(2), dr.GetTimeSpan(3));
+            }
+        }
+
+        return null;
     }
 }

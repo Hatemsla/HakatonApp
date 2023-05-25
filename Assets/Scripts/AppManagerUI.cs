@@ -25,4 +25,7 @@ public class AppManagerUI : MonoBehaviour
     public TMP_Text userName;
     public TMP_InputField updatePasswordInput;
     public Button saveUserSettingsBtn;
+    
+    [Header("HakatonTaskStatsMenu")]
+    public TMP_Dropdown hakatonTaskStatsDropdown;
 }

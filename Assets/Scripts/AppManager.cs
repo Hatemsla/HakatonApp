@@ -15,6 +15,7 @@ public class AppManager : MonoBehaviour
     public HakatonInfoManager hakatonInfoManager;
     public TaskRatingManager taskRatingManager;
     public TopTeamsManager topTeamsManager;
+    public HakatonTaskStatsInfo hakatonTaskStatsInfo;
 
     private DBHelper _dbHelper;
     
@@ -65,7 +66,7 @@ public class AppManager : MonoBehaviour
     {
         try
         {
-            _dbHelper.RegUser(appManagerUI.loginRegInput.text, appManagerUI.passwordRegInput.text, Roles.postgres);
+            _dbHelper.RegUser(appManagerUI.loginRegInput.text, appManagerUI.passwordRegInput.text, (Roles)appManagerUI.roleDropdown.value);
         }
         catch (NpgsqlException e)
         {
@@ -115,6 +116,20 @@ public class AppManager : MonoBehaviour
             topTeamsManager.CreateTopTeamsPanels(team);
         }
         menuManager.OpenSubMenu("StatsTeamsMenu");
+    }
+
+    public void StatsHakatonTaskStats()
+    {
+        var hakatons = _dbHelper.GetHakatons(User.Login);
+        appManagerUI.hakatonTaskStatsDropdown.options = hakatons;
+        GetHakatonStats(appManagerUI.hakatonTaskStatsDropdown.value);
+        menuManager.OpenSubMenu("HakatonTaskStatsMenu");
+    }
+
+    public void GetHakatonStats(int value)
+    {
+        var hakatonTaskStats = _dbHelper.GetHakatonTaskStats(User.Login, appManagerUI.hakatonTaskStatsDropdown.options[value].text);
+        hakatonTaskStatsInfo.SetInfoPanel(hakatonTaskStats);
     }
 
     public void OpenUser()
